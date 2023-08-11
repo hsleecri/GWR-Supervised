@@ -188,7 +188,7 @@ class GammaGWR:
         self.tau_n = 0.1
         self.max_nodes = self.samples # OK for batch, bad for incremental
         self.max_neighbors = 6
-        self.max_age = 600
+        self.max_age = 5168
         self.new_node = 0.5
         self.num_classes = ds.num_classes
         self.a_inc = 1
