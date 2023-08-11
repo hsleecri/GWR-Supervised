@@ -1,14 +1,19 @@
 import gtls
 from GammaGWR import GammaGWR
 import optuna
+import optuna.visualization as vis
 
 def objective(trial):
     # Define the hyperparameter search space
-    epochs = trial.suggest_int('epochs', 10, 50)
-    a_threshold = trial.suggest_float('a_threshold', 0.1, 0.5)
-    beta = trial.suggest_float('beta', 0.1, 1.0)
+    epochs = trial.suggest_int('epochs', 10, 100)
+    a_threshold = trial.suggest_float('a_threshold', 0.2, 0.4)
+    beta = trial.suggest_float('beta', 0.01, 0.9)
     epsilon_b = trial.suggest_float('epsilon_b', 0.01, 0.5)
     epsilon_n = trial.suggest_float('epsilon_n', 0.001, 0.1)
+    hab_threshold = trial.suggest_float('hab_threshold', 0.05, 0.2)
+    tau_b = trial.suggest_float('tau_b', 0.1, 0.5)
+    tau_n = trial.suggest_float('tau_n', 0.05, 0.2)
+    max_age = trial.suggest_int('max_age', 1000, 10000)
 
     # Create and train network with suggested hyperparameters
     my_net = GammaGWR()
@@ -29,7 +34,7 @@ if __name__ == "__main__":
         print("%s from %s loaded." % (ds_iris.name, ds_iris.file))
 
     study = optuna.create_study(direction="maximize")  # Maximize test accuracy
-    study.optimize(objective, n_trials=50)  # Run 50 optimization trials
+    study.optimize(objective, n_trials=5000)  # Run 50 optimization trials
 
     print("Number of finished trials: ", len(study.trials))
     print("Best trial:")
@@ -38,3 +43,8 @@ if __name__ == "__main__":
     print("Params: ")
     for key, value in trial.params.items():
         print(f"    {key}: {value}")
+
+    # Visualization
+    vis.plot_optimization_history(study)
+    vis.plot_parallel_coordinate(study)
+    vis.plot_slice(study)
