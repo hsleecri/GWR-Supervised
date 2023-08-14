@@ -6,21 +6,21 @@ import plotly.io as pio
 
 def objective(trial):
     # Define the hyperparameter search space
-    epochs = trial.suggest_int('epochs', 1, 100)
-    a_threshold = trial.suggest_float('a_threshold', 0.1, 0.5)
-    beta = trial.suggest_float('beta', 0.01, 0.95)
-    epsilon_b = trial.suggest_float('epsilon_b', 0.01, 0.5)
-    epsilon_n = trial.suggest_float('epsilon_n', 0.001, 0.1)
-    hab_threshold = trial.suggest_float('hab_threshold', 0.05, 0.2)
-    tau_b = trial.suggest_float('tau_b', 0.1, 0.5)
-    tau_n = trial.suggest_float('tau_n', 0.05, 0.2)
-    max_age = trial.suggest_int('max_age', 100, 10000)
-    num_context = trial.suggest_int('num_context', 1, 15)  # Adjust the range as needed
+    epochs = trial.suggest_int('epochs', 1, 100, step=1)
+    a_threshold = trial.suggest_float('a_threshold', 0.1, 0.5, step=0.01)
+    beta = trial.suggest_float('beta', 0.01, 0.95, step=0.01)
+    epsilon_b = trial.suggest_float('epsilon_b', 0.01, 0.5, step=0.005)
+    epsilon_n = trial.suggest_float('epsilon_n', 0.001, 0.1, step=0.001)
+    hab_threshold = trial.suggest_float('hab_threshold', 0.05, 0.2, step=0.005)
+    tau_b = trial.suggest_float('tau_b', 0.1, 0.5, step=0.005)
+    tau_n = trial.suggest_float('tau_n', 0.05, 0.2, step=0.001)
+    max_age = trial.suggest_int('max_age', 100, 10000, step=100)
+    num_context = trial.suggest_int('num_context', 1, 15, step=1)  # Adjust the range as needed
 
     # Create and train network with suggested hyperparameters
     my_net = GammaGWR()
     my_net.init_network(ds=ds_iris, random=False, num_context=num_context)
-    my_net.train_ggwr(ds=ds_iris, epochs=epochs, a_threshold=a_threshold, beta=beta, l_rates=[epsilon_b, epsilon_n])
+    my_net.train_ggwr(ds=ds_iris, epochs=epochs, a_threshold=a_threshold, beta=beta, l_rates=[epsilon_b, epsilon_n],hab_threshold=hab_threshold, tau_b=tau_b, tau_n=tau_n, max_age=max_age)
 
     # Test network
     my_net.test_gammagwr(ds_iris, test_accuracy=True)
@@ -36,7 +36,7 @@ if __name__ == "__main__":
         print("%s from %s loaded." % (ds_iris.name, ds_iris.file))
 
     study = optuna.create_study(direction="maximize")  # Maximize test accuracy
-    study.optimize(objective, n_trials=500)  # Set optimization trials
+    study.optimize(objective, n_trials=100)  # Set optimization trials
 
     print("Number of finished trials: ", len(study.trials))
     print("Best trial:")

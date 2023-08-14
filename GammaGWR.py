@@ -172,7 +172,7 @@ class GammaGWR:
                     ind_c += 1
             print ("(-- Removed %s neuron(s))" % rem_c)
                 
-    def train_ggwr(self, ds, epochs, a_threshold, beta, l_rates) -> None:
+    def train_ggwr(self, ds, epochs, a_threshold, beta, l_rates,hab_threshold,tau_b,tau_n,max_age) -> None: #a_inc랑 a_dec는 하이퍼파라미터 느낌이 아닌 듯
         
         assert not self.locked, "Network is locked. Unlock to train."
         assert ds.vectors.shape[1] == self.dimension, "Wrong dimensionality"
@@ -183,12 +183,12 @@ class GammaGWR:
         self.epsilon_b, self.epsilon_n = l_rates
         self.beta = beta
         
-        self.hab_threshold = 0.1
-        self.tau_b = 0.3
-        self.tau_n = 0.1
+        self.hab_threshold = hab_threshold
+        self.tau_b = tau_b
+        self.tau_n = tau_n
         self.max_nodes = self.samples # OK for batch, bad for incremental
         self.max_neighbors = 6
-        self.max_age = 5168
+        self.max_age = max_age
         self.new_node = 0.5
         self.num_classes = ds.num_classes
         self.a_inc = 1
