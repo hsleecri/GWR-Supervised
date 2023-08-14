@@ -77,7 +77,7 @@ class GammaGWR:
         for i in range(0, len(init_ind)):
             self.weights[i] = ds.vectors[init_ind[i]]
             self.alabels[i][int(ds.labels[i])] = 1
-            print(self.weights[i])
+            # print(self.weights[i]) #이것 때문에 출력이 너무 많아
             
         # Context coefficients
         self.alphas = self.compute_alphas(self.depth)

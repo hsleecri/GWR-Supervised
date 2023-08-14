@@ -116,17 +116,8 @@ def export_result(file_name, net, ds) -> None:
         b_index, b_distance = net.find_bmus(input)
         net.bmus_index[i] = b_index
         net.bmus_activation[i] = math.exp(-b_distance)
-    
-
-    #print(net.bmus_index)
-    print("len(net.weights)=")
-    print(len(net.weights))
-    for ni in range(len(net.weights)):
-        print(net.weights[ni][0])
-    print("ends")
     gwr_node = [x[0] for x in net.weights]
     df_node = pd.DataFrame(gwr_node)
-
     weights_file_name= str(file_name+"weight.csv")
     df_node.to_csv(path_or_buf=weights_file_name, index=True)
     df = pd.DataFrame(net.bmus_index)
@@ -142,7 +133,7 @@ class Dataset:
     """ Create an instance dataset
     """
     def __init__(self, file, normalize):
-        self.name = 'IRIS'
+        self.name = 'data'
         self.file = file
         self.normalize = normalize
         self.num_classes = 21
