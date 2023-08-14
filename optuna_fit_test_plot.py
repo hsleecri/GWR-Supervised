@@ -41,8 +41,8 @@ def objective(trial, ds_iris):
 def main(num_trials=50):
     
     #File paths
-    file_path = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_레이블_첫행제거_레이블값1뺐음.csv'
-    result_file = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_레이블_첫행제거_레이블값1뺐음_결과.csv'
+    file_path = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_레이블_첫행제거_레이블값1뺐음_얼굴제거.csv'
+    result_file = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_레이블_첫행제거_레이블값1뺐음_얼굴제거_결과.csv'
     output_directory = 'C:\\Users\\hslee\Desktop\dataset\\HYEONSU\\4공정\\PNG\\'
 
     # Flags
