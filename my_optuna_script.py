@@ -4,44 +4,64 @@ import optuna
 import optuna.visualization as vis
 import plotly.io as pio
 
-def objective(trial):
+def objective(trial, ds_iris):
     # Define the hyperparameter search space
-    epochs = trial.suggest_int('epochs', 1, 100, step=1)
-    a_threshold = trial.suggest_float('a_threshold', 0.1, 0.5, step=0.01)
-    beta = trial.suggest_float('beta', 0.01, 0.95, step=0.01)
-    epsilon_b = trial.suggest_float('epsilon_b', 0.01, 0.5, step=0.005)
-    epsilon_n = trial.suggest_float('epsilon_n', 0.001, 0.1, step=0.001)
-    hab_threshold = trial.suggest_float('hab_threshold', 0.05, 0.2, step=0.005)
-    tau_b = trial.suggest_float('tau_b', 0.1, 0.5, step=0.005)
-    tau_n = trial.suggest_float('tau_n', 0.05, 0.2, step=0.001)
+    epochs = trial.suggest_int('epochs', 1, 100)
+    a_threshold = trial.suggest_int('a_threshold', 1, 5) * 0.1
+    beta = trial.suggest_int('beta', 1, 95) * 0.01
+    epsilon_b = trial.suggest_int('epsilon_b', 1, 50) * 0.01
+    epsilon_n = trial.suggest_int('epsilon_n', 1, 100) * 0.001
+    hab_threshold = trial.suggest_int('hab_threshold', 5, 20) * 0.01
+    tau_b = trial.suggest_int('tau_b', 10, 50) * 0.01
+    tau_n = trial.suggest_int('tau_n', 5, 20) * 0.005
     max_age = trial.suggest_int('max_age', 100, 10000, step=100)
-    num_context = trial.suggest_int('num_context', 1, 15, step=1)  # Adjust the range as needed
-
+    num_context = trial.suggest_int('num_context', 1, 15)
+    penalty_weight = trial.suggest_int('penalty_weight', 1, 100)*0.001
+    
+    ''' #float로 하니까 잘 안되네..
+    epochs = trial.suggest_int('epochs', 1, 100)
+    a_threshold = trial.suggest_float('a_threshold', 0.1, 0.5, step=0.1)
+    beta = trial.suggest_float('beta', 0.01, 0.95, step=0.01)
+    epsilon_b = trial.suggest_float('epsilon_b', 0.01, 0.5, step=0.01)
+    epsilon_n = trial.suggest_float('epsilon_n', 0.001, 0.1, step=0.001)
+    hab_threshold = trial.suggest_float('hab_threshold', 0.05, 0.2, step=0.01)
+    tau_b = trial.suggest_float('tau_b', 0.1, 0.5, step=0.01)
+    tau_n = trial.suggest_float('tau_n', 0.05, 0.2, step=0.005)
+    max_age = trial.suggest_int('max_age', 100, 10000, step=100)
+    num_context = trial.suggest_int('num_context', 1, 15)
+    '''
     # Create and train network with suggested hyperparameters
     my_net = GammaGWR()
     my_net.init_network(ds=ds_iris, random=False, num_context=num_context)
-    my_net.train_ggwr(ds=ds_iris, epochs=epochs, a_threshold=a_threshold, beta=beta, l_rates=[epsilon_b, epsilon_n],hab_threshold=hab_threshold, tau_b=tau_b, tau_n=tau_n, max_age=max_age)
+    my_net.train_ggwr(ds=ds_iris, epochs=epochs, a_threshold=a_threshold, beta=beta, l_rates=[epsilon_b, epsilon_n], hab_threshold=hab_threshold, tau_b=tau_b, tau_n=tau_n, max_age=max_age)
 
     # Test network
     my_net.test_gammagwr(ds_iris, test_accuracy=True)
 
-    return 1 - my_net.test_accuracy  # Optuna minimizes the objective function
+    # Get the number of nodes
+    num_nodes = my_net.get_num_nodes()
 
-if __name__ == "__main__":
+    # Compute the loss, with a penalty if num_nodes is not close to the number of classes
+    loss = (1 - my_net.test_accuracy)*(1- penalty_weight) + abs(num_nodes - my_net.num_classes) * penalty_weight
+
+    # Attach the test accuracy to the trial
+    trial.set_user_attr('test_accuracy', my_net.test_accuracy)
+
+    return loss
+
+def main(data_file, output_directory, n_trials):
     # Import dataset from file
-    data_flag = True
-
-    if data_flag:
-        ds_iris = gtls.Dataset(file='C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_레이블_첫행제거_레이블값1뺐음.csv', normalize=True)
-        print("%s from %s loaded." % (ds_iris.name, ds_iris.file))
+    ds_iris = gtls.Dataset(file=data_file, normalize=True)
+    print("%s from %s loaded." % (ds_iris.name, ds_iris.file))
 
     study = optuna.create_study(direction="maximize")  # Maximize test accuracy
-    study.optimize(objective, n_trials=100)  # Set optimization trials
+    study.optimize(lambda trial: objective(trial, ds_iris), n_trials=n_trials)  # Set optimization trials
 
     print("Number of finished trials: ", len(study.trials))
     print("Best trial:")
     trial = study.best_trial
-    print("Value: ", 1 - trial.value)  # Test accuracy
+    print("Value: ", 1 - trial.value)  # Loss
+    print("Test Accuracy: ", trial.user_attrs['test_accuracy'])  # Print the test_accuracy
     print("Params: ")
     for key, value in trial.params.items():
         print(f"    {key}: {value}")
@@ -51,7 +71,12 @@ if __name__ == "__main__":
     plot_parallel_coordinate = vis.plot_parallel_coordinate(study)
     plot_slice = vis.plot_slice(study)
 
-    # Save plots as PNG
-    pio.write_image(plot_optimization_history, 'optimization_history.png')
-    pio.write_image(plot_parallel_coordinate, 'parallel_coordinate.png')
-    pio.write_image(plot_slice, 'slice_plot.png')
+    # Save plots as PNG to the specified directory
+    pio.write_image(plot_optimization_history, output_directory + 'optimization_history.png')
+    pio.write_image(plot_parallel_coordinate, output_directory + 'parallel_coordinate.png')
+    pio.write_image(plot_slice, output_directory + 'slice_plot.png')
+
+if __name__ == "__main__":
+    data_file = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_레이블_첫행제거_레이블값1뺐음.csv'
+    output_directory = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\PNG\\'
+    main(data_file, output_directory, n_trials=100) #set the number of trials in study

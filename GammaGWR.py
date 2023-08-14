@@ -297,3 +297,7 @@ class GammaGWR:
 
         if test_accuracy:
             self.test_accuracy = acc_counter / test_ds.vectors.shape[0]
+
+        # Defining a method to get the number of nodes in the GammaGWR class
+    def get_num_nodes(self):
+        return self.num_nodes

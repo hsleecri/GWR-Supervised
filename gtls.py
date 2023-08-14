@@ -137,8 +137,7 @@ def export_result(file_name, net, ds) -> None:
     plt.ylabel('Number of cluster')
     sns.scatterplot(net.bmus_index)
     plt.show()
-
-
+    
 class Dataset:
     """ Create an instance dataset
     """
@@ -163,3 +162,7 @@ class Dataset:
         
         if self.normalize:
             self.vectors = normalize_data(self.vectors)
+
+# Defining a method to get the number of nodes in the GammaGWR class
+def get_num_classes(self):
+    return self.num_classes
