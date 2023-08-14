@@ -30,16 +30,18 @@ if __name__ == "__main__":
        # Create network 
        my_net = GammaGWR()
        # Initialize network with two neurons
-       my_net.init_network(ds=ds_iris, random=False, num_context=1)
+       my_net.init_network(ds=ds_iris, random=False, num_context=13)
        # Train network on dataset
-       my_net.train_ggwr(ds=ds_iris, epochs=15, a_threshold=0.35, beta=0.7, l_rates=[0.2, 0.001])
-       
+    #    my_net.train_ggwr(ds=ds_iris, epochs=15, a_threshold=0.35, beta=0.7, l_rates=[0.2, 0.001])
+       my_net.train_ggwr(ds=ds_iris, epochs=86, a_threshold=0.1826903787085066, beta=0.06725872568741006,l_rates=[0.40323047009253504,0.0326872706770626], 
+                         hab_threshold=0.09979474963903648, tau_b=0.3535307894839173, tau_n=0.13849675735445163, max_age=1030) # l_rates=[epsilon_b, epsilon_n]
+
     if test_flag:
         my_net.test_gammagwr(ds_iris, test_accuracy=True)
         print("Accuracy on test-set: %s" % my_net.test_accuracy)
  
     if result_flag:
-        fname= 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\PROCESS4_FRONT_PART1_CSV\\결과\\Part1.mp4pose_world_visibility사라짐_하반신제거_결측치처리됨_첫행feature없음_결과.csv'
+        fname= 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_레이블_첫행제거_레이블값1뺐음_결과.csv'
         gtls.export_result(fname, my_net, ds_iris)
 
     if export_flag:

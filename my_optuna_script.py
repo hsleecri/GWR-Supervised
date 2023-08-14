@@ -16,9 +16,10 @@ def objective(trial, ds_iris):
     tau_n = trial.suggest_int('tau_n', 5, 20) * 0.005
     max_age = trial.suggest_int('max_age', 100, 10000, step=100)
     num_context = trial.suggest_int('num_context', 1, 15)
-    penalty_weight = trial.suggest_int('penalty_weight', 1, 100)*0.001
+    # penalty_weight = trial.suggest_int('penalty_weight', 1, 100)*0.001 #loss function에 penalty_weight를 넣고 싶으면 수정
     
-    ''' #float로 하니까 잘 안되네..
+    # float로 하니까 값이 새버려서 step size만큼 이동이 안돼..
+    '''
     epochs = trial.suggest_int('epochs', 1, 100)
     a_threshold = trial.suggest_float('a_threshold', 0.1, 0.5, step=0.1)
     beta = trial.suggest_float('beta', 0.01, 0.95, step=0.01)
@@ -38,14 +39,18 @@ def objective(trial, ds_iris):
     # Test network
     my_net.test_gammagwr(ds_iris, test_accuracy=True)
 
+    '''
     # Get the number of nodes
     num_nodes = my_net.get_num_nodes()
 
     # Compute the loss, with a penalty if num_nodes is not close to the number of classes
-    loss = (1 - my_net.test_accuracy)*(1- penalty_weight) + abs(num_nodes - my_net.num_classes) * penalty_weight
-
+    loss = 1 - my_net.test_accuracy + abs(num_nodes - my_net.num_classes) * 0.01
+    '''
+    loss = my_net.test_accuracy #loss funcntion을 test_accuracy로 설정
     # Attach the test accuracy to the trial
     trial.set_user_attr('test_accuracy', my_net.test_accuracy)
+
+    print(f"Trial {trial.number} finished with test accuracy: {my_net.test_accuracy:.6f}")
 
     return loss
 
@@ -60,7 +65,7 @@ def main(data_file, output_directory, n_trials):
     print("Number of finished trials: ", len(study.trials))
     print("Best trial:")
     trial = study.best_trial
-    print("Value: ", 1 - trial.value)  # Loss
+    print("Value: ", trial.value)  # Loss
     print("Test Accuracy: ", trial.user_attrs['test_accuracy'])  # Print the test_accuracy
     print("Params: ")
     for key, value in trial.params.items():
@@ -79,4 +84,4 @@ def main(data_file, output_directory, n_trials):
 if __name__ == "__main__":
     data_file = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_레이블_첫행제거_레이블값1뺐음.csv'
     output_directory = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\PNG\\'
-    main(data_file, output_directory, n_trials=100) #set the number of trials in study
+    main(data_file, output_directory, n_trials=20) #set the number of trials in study
