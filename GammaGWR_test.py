@@ -7,7 +7,7 @@ if __name__ == "__main__":
     data_flag = True
     # Import pickled network
     import_flag = False
-    # Train AGWR with imported dataset    
+    # Train GWR with imported dataset    
     train_flag = True
     # Compute classification accuracy    
     test_flag = True
@@ -35,6 +35,12 @@ if __name__ == "__main__":
     #    my_net.train_ggwr(ds=ds_iris, epochs=15, a_threshold=0.35, beta=0.7, l_rates=[0.2, 0.001])
        my_net.train_ggwr(ds=ds_iris, epochs=86, a_threshold=0.1826903787085066, beta=0.06725872568741006,l_rates=[0.40323047009253504,0.0326872706770626], 
                          hab_threshold=0.09979474963903648, tau_b=0.3535307894839173, tau_n=0.13849675735445163, max_age=1030) # l_rates=[epsilon_b, epsilon_n]
+
+    """
+    기존 연구 코드에서 explicit하게 hyperparameter라고 써놓은 것들: num_context=1,epochs=15,a_threshold=0.85, beta=0.7, l_rates=[0.2, 0.001]
+    기존 연구 코드에서 코드 내부에 특정값으로 설정되어 있던 것들: hab_threshold = 0.1, tau_b = 0.3, tau_n = 0.1, max_neighbors = 6, max_age = 600
+    내가 생각할 때 성능에 큰 영향을 미치는 hyperparamter들: num_context, epochs, a_thrshold, beta, l_rates, max_age
+    """
 
     if test_flag:
         my_net.test_gammagwr(ds_iris, test_accuracy=True)

@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import math
 import seaborn as sns
 import pandas as pd
+import os
 
 def import_network(file_name, NetworkClass):
     """ Import pickled network from file
@@ -22,6 +23,21 @@ def export_network(file_name, net) -> None:
     file = open(file_name, 'wb')
     file.write(pickle.dumps(net.__dict__))
     file.close()
+
+def export_network_to_local(file_name, net, export_directory) -> None:
+    """ Export pickled network to file in local environment
+    """ 
+    # Generate a directory if the file path doesn't exist
+    if not os.path.exists(export_directory):
+        os.makedirs(export_directory)
+
+    # Combine the file's name and path
+    full_path = os.path.join(export_directory, file_name)
+    
+    with open(full_path, 'wb') as file:
+        file.write(pickle.dumps(net.__dict__))
+    print(f"Network saved to {full_path}")
+
 
 def load_file(file_name) -> np.ndarray:
     """ Load dataset from file
@@ -128,6 +144,8 @@ def export_result(file_name, net, ds) -> None:
     plt.ylabel('Number of cluster')
     sns.scatterplot(net.bmus_index)
     plt.show()
+
+
     
 class Dataset:
     """ Create an instance dataset

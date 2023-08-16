@@ -35,14 +35,22 @@ def objective(trial, ds_iris):
     my_net.init_network(ds=ds_iris, random=False, num_context=num_context)
     my_net.train_ggwr(ds=ds_iris, epochs=epochs, a_threshold=a_threshold, beta=beta, l_rates=[epsilon_b, epsilon_n], hab_threshold=hab_threshold, tau_b=tau_b, tau_n=tau_n, max_age=max_age)
 
+    """
+    기존 연구 코드에서 explicit하게 hyperparameter라고 써놓은 것들: num_context=1,epochs=15,a_threshold=0.85, beta=0.7, l_rates=[0.2, 0.001]
+    기존 연구 코드에서 코드 내부에 특정값으로 설정되어 있던 것들: hab_threshold = 0.1, tau_b = 0.3, tau_n = 0.1, max_neighbors = 6, max_age = 600
+    내가 생각할 때 성능에 큰 영향을 미치는 hyperparamter들: num_context, epochs, a_thrshold, beta, l_rates, max_age
+    """
+
     my_net.test_gammagwr(ds_iris, test_accuracy=True)
+    fname = 'my_net.ggwr'
+    gtls.export_network(fname, my_net)
     return my_net.test_accuracy
 
-def main(num_trials=50):
+def main(num_trials=1):
     
     #File paths
-    file_path = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_레이블_첫행제거_레이블값1뺐음_얼굴제거.csv'
-    result_file = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_레이블_첫행제거_레이블값1뺐음_얼굴제거_결과.csv'
+    file_path = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_레이블_첫행제거_레이블값1뺐음.csv'
+    result_file = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_레이블_첫행제거_레이블값1뺐음_결과.csv'
     output_directory = 'C:\\Users\\hslee\Desktop\dataset\\HYEONSU\\4공정\\PNG\\'
 
     # Flags
