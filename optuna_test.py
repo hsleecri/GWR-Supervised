@@ -23,7 +23,7 @@ def objective(trial, ds_iris,export_network_directory):
     # float로 하니까 값이 새버려서 step size만큼 이동이 안돼..
     #'''
     epochs = trial.suggest_int('epochs', 1, 100)
-    a_threshold = trial.suggest_float('a_threshold', 0.1, 0.4)
+    a_threshold = trial.suggest_float('a_threshold', 0.1, 0.5)
     beta = trial.suggest_float('beta', 0.01, 0.95)
     epsilon_b = trial.suggest_float('epsilon_b', 0.1, 0.3)
     epsilon_n = trial.suggest_float('epsilon_n', 0.0005, 0.0015)
@@ -68,7 +68,7 @@ def objective(trial, ds_iris,export_network_directory):
 
 def main(data_file, output_directory, export_network_directory, n_trials):
     # Import dataset from file
-    ds_iris = gtls.Dataset(file=data_file, normalize=True)
+    ds_iris = gtls.Dataset(file=data_file, normalize=False)
     print("%s from %s loaded." % (ds_iris.name, ds_iris.file))
 
     study = optuna.create_study(direction="minimize")  # Minimizing loss = Maximize test accuracy
@@ -94,7 +94,7 @@ def main(data_file, output_directory, export_network_directory, n_trials):
     pio.write_image(plot_slice, output_directory + 'slice_plot.png')
 
 if __name__ == "__main__":
-    data_file = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_sorted_features_by_std_deviation_상위10개_레이블_첫행제거.csv'
+    data_file = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_표준편차정렬_레이블_10개feature_첫행제거.csv'
     output_directory = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\PNG\\'
     export_network_directory = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\Pickle\\' 
     main(data_file, output_directory, export_network_directory, n_trials=150) #set the number of trials in study
