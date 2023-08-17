@@ -205,11 +205,17 @@ class GammaGWR:
                 # Generate input sample
                 self.g_context[0] = ds.vectors[iteration]
                 label = ds.labels[iteration]
-                
+                # '''
                 # Update global context
                 for z in range(1, self.depth):
                     self.g_context[z] = (self.beta * previous_bmu[z]) + ((1-self.beta) * previous_bmu[z-1])
-                
+                # '''
+                '''
+                # Update global context 자꾸 오류나서 현수가 수정한 부분
+                for z in range(1, min(self.depth, len(previous_bmu))):
+                    self.g_context[z] = (self.beta * previous_bmu[z]) + ((1-self.beta) * previous_bmu[z-1])
+                '''
+
                 # Find the best and second-best matching neurons
                 b_index, b_distance, s_index = self.find_bmus(self.g_context, s_best = True)
                 
