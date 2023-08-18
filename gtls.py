@@ -6,6 +6,9 @@ import math
 import seaborn as sns
 import pandas as pd
 import os
+from sklearn.decomposition import PCA
+from matplotlib.ticker import MaxNLocator
+from sklearn.metrics import adjusted_rand_score
 
 def import_network(file_name, NetworkClass):
     """ Import pickled network from file
@@ -90,7 +93,7 @@ def plot_network(net, edges, labels) -> None:
                                  'gray', alpha=.3)                        
     plt.show()
 
-def plot_network_hs(net, edges, labels) -> None:
+def plot_network_multi_labels(net, edges, labels) -> None:
     """ 2D plot
     """
     # Define a list of colors for 21 different labels
@@ -124,29 +127,231 @@ def plot_network_hs(net, edges, labels) -> None:
                                  color=ccc[plindex], alpha=.3)
     plt.show()
 
-def export_result(file_name, net, ds) -> None:
-    net.bmus_index = -np.ones(net.samples)
-    net.bmus_activation = np.zeros(net.samples)
-    for i in range(0, net.samples):
-        input = ds.vectors[i]
-        b_index, b_distance = net.find_bmus(input)
-        net.bmus_index[i] = b_index
-        net.bmus_activation[i] = math.exp(-b_distance)
-    gwr_node = [x[0] for x in net.weights]
-    df_node = pd.DataFrame(gwr_node)
-    weights_file_name= str(file_name+"weight.csv")
-    df_node.to_csv(path_or_buf=weights_file_name, index=True)
-    df = pd.DataFrame(net.bmus_index)
-    #print(df)
-    df.to_csv(path_or_buf=file_name, index=False, header=False)
-    plt.figure(figsize=(20, 10))
-    plt.xlabel('Number of frame')
-    plt.ylabel('Number of cluster')
-    sns.scatterplot(net.bmus_index)
+def generate_colors(n):
+    """Generate a list of distinct colors.
+
+    Args:
+        n: Number of distinct colors to generate.
+
+    Returns:
+        A list of RGB tuples representing distinct colors.
+    """
+    return plt.cm.jet(np.linspace(0, 1, n))
+
+
+def plot_network_with_pca(net, edges, labels) -> None:
+    """ 2D plot after applying PCA to net.weights
+    """
+    # Apply PCA to net.weights and get the first two principal components
+    weights = np.array([w[0] if len(w.shape) < 2 else w[0, :] for w in net.weights])
+    pca = PCA(n_components=2)
+    transformed_weights = pca.fit_transform(weights)
+
+    # Generate a color palette with as many colors as there are nodes
+    ccc = generate_colors(len(transformed_weights))
+
+    plt.figure()
+    for ni in range(len(transformed_weights)):
+        plindex = np.argmax(net.alabels[ni])
+        x, y = transformed_weights[ni][0], transformed_weights[ni][1]  # Extracting the coordinates
+        if labels:
+            plt.scatter(x, y, color=ccc[ni], alpha=.5)  # Using a unique color for each node
+        else:
+            plt.scatter(x, y, alpha=.5)
+        
+        # Adding the cluster index as a label near the point
+        plt.text(x, y, str(ni), fontsize=9)
+        
+        if edges:
+            for nj in range(len(transformed_weights)):
+                if net.edges[ni, nj] > 0:
+                    plt.plot([transformed_weights[ni][0], transformed_weights[nj][0]], 
+                             [transformed_weights[ni][1], transformed_weights[nj][1]],
+                             'gray', alpha=.3)
+                    
+    # Adding labels for the axes
+    plt.xlabel('Principal Component 1')
+    plt.ylabel('Principal Component 2')
     plt.show()
 
+def show_result(file_name, net, ds) -> None:
+    """Saves the network weights to a CSV file and plots the BMUs.
+    """
+    # Initialize BMUs index and activation
+    net.bmus_index = -np.ones(net.samples)
+    net.bmus_activation = np.zeros(net.samples)
 
+    # Calculate BMUs index and activation
+    for i in range(net.samples):
+        input_vector = ds.vectors[i]
+        b_index, b_distance = net.find_bmus(input_vector)
+        net.bmus_index[i] = b_index
+        net.bmus_activation[i] = math.exp(-b_distance)
+
+    # # Save weights to CSV
+    # gwr_node_weights = [x[0] for x in net.weights]
+    # df_node = pd.DataFrame(gwr_node_weights)
+    # weights_file_name = f"{file_name}weight.csv"
+    # df_node.to_csv(path_or_buf=weights_file_name, index=True)
+
+    # # Save BMUs index to CSV
+    # df_bmus = pd.DataFrame(net.bmus_index)
+    # df_bmus.to_csv(path_or_buf=file_name, index=False, header=False)
+
+    # Generate a color palette with as many colors as there are nodes
+    number_of_nodes = len(net.weights)
+    ccc = generate_colors(number_of_nodes)
+
+    # Create a mapping from cluster index to color
+    cluster_colors = [ccc[int(index)] for index in net.bmus_index]
+
+    # Plot BMUs index with the corresponding colors
+    plt.figure(figsize=(20, 10))
+    plt.title('Cluster Indices by Model Across Frames')  # Add title
+    plt.xlabel('Number of frames')
+    plt.ylabel('Cluster Index')
+    plt.scatter(x=range(len(net.bmus_index)), y=net.bmus_index, c=cluster_colors)
+    plt.show()
+
+def show_original_clusters(ds) -> None:
+    """Plots the original cluster indices from the dataset across frames.
+    """
+    # Generate a color palette with as many colors as there are classes
+    number_of_classes = ds.num_classes
+    ccc = generate_colors(number_of_classes)
+
+    # Create a mapping from cluster index to color
+    cluster_colors = [ccc[int(index)] for index in ds.labels]
+
+    # Plot original cluster indices with the corresponding colors
+    plt.figure(figsize=(20, 10))
+    plt.title('Original Cluster Indices Across Frames')  # Add title
+    plt.xlabel('Number of frames')
+    plt.ylabel('Cluster Index')
+    plt.scatter(x=range(len(ds.labels)), y=ds.labels, c=cluster_colors)
+
+    # Set y-axis tick locations to integers
+    plt.gca().yaxis.set_major_locator(MaxNLocator(integer=True))
+    plt.show()
+'''
+def show_result_segmentation(net, ds) -> None:
+    """Plots the cluster indices by the model across frames as colored rectangles.
+    """
+    # Initialize BMUs index and activation
+    net.bmus_index = -np.ones(net.samples)
+    net.bmus_activation = np.zeros(net.samples)
+
+    # Calculate BMUs index and activation
+    for i in range(net.samples):
+        input_vector = ds.vectors[i]
+        b_index, b_distance = net.find_bmus(input_vector)
+        net.bmus_index[i] = b_index
+        net.bmus_activation[i] = math.exp(-b_distance)
+
+    # Generate a color palette with as many colors as there are nodes
+    number_of_nodes = len(net.weights)
+    ccc = generate_colors(number_of_nodes)
+
+    # Plot colored rectangles for each cluster index
+    plt.figure(figsize=(10, 2))
+    plt.title('Cluster Indices by Model Across Frames')
+
+    plt.ylim(0, 1)  # Set y-axis limits to create a single line effect
+    for i in range(len(net.bmus_index)):
+        color = ccc[int(net.bmus_index[i])]
+        plt.axvspan(i, i + 1, facecolor=color, alpha=1)  # Draw a colored rectangle for each frame
+
+    plt.xticks([])  # Hide x-axis ticks
+    plt.yticks([])  # Hide y-axis ticks
+    plt.show()
+
+def show_original_clusters_segmentation(ds) -> None:
+    """Plots the original cluster indices from the dataset across frames as colored rectangles.
+    """
+    # Generate a color palette with as many colors as there are classes
+    number_of_classes = ds.num_classes
+    ccc = generate_colors(number_of_classes)
+
+    # Plot colored rectangles for each original cluster index
+    plt.figure(figsize=(10, 2))
+    plt.title('Original Cluster Indices Across Frames')
+    plt.xlabel('Number of frames')
+    plt.ylim(0, 1)  # Set y-axis limits to create a single line effect
+    for i in range(len(ds.labels)):
+        color = ccc[int(ds.labels[i])]
+        plt.axvspan(i, i + 1, facecolor=color, alpha=1)  # Draw a colored rectangle for each frame
+
+    plt.xticks([])  # Hide x-axis ticks
+    plt.yticks([])  # Hide y-axis ticks
+    plt.show()
+'''
+def generate_color_mapping(original_labels, model_labels, num_colors):
+    # Calculate the Adjusted Rand Index between original and model clusters
+    # 이 함수는 원래 레이블과 모델 레이블 간의 ARI를 계산하고, 일정 임계값 이상일 경우 일치하는 클러스터를 찾아 색상 매핑을 생성함
+    ari = adjusted_rand_score(original_labels, model_labels)
+
+    # Check the similarity and create a color mapping
+    if ari > 0.5: # Threshold to consider as similar clustering
+        unique_original_labels = np.unique(original_labels)
+        unique_model_labels = np.unique(model_labels)
+        color_mapping = {}
+
+        for orig_label in unique_original_labels:
+            matching_model_label = unique_model_labels[np.argmax([adjusted_rand_score(original_labels[original_labels==orig_label], model_labels[original_labels==orig_label]) for mod_label in unique_model_labels])]
+            color_mapping[orig_label] = matching_model_label
+
+        return color_mapping
+    else:
+        print("Clusters are not sufficiently similar for a consistent color mapping.")
+        return None
     
+def show_result_segmentation(net, ds, color_mapping) -> None:
+    # Initialize BMUs index and activation
+    net.bmus_index = -np.ones(net.samples)
+    net.bmus_activation = np.zeros(net.samples)
+
+    # Calculate BMUs index and activation
+    for i in range(net.samples):
+        input_vector = ds.vectors[i]
+        b_index, b_distance = net.find_bmus(input_vector)
+        net.bmus_index[i] = b_index
+        net.bmus_activation[i] = math.exp(-b_distance)
+
+    # Generate a color palette with as many colors as there are nodes
+    ccc = generate_colors(len(net.weights))
+
+    # Plot colored rectangles for each cluster index
+    plt.figure(figsize=(10, 2))
+    plt.title('Cluster Indices by Model Across Frames')
+
+    plt.ylim(0, 1)  # Set y-axis limits to create a single line effect
+    for i in range(len(net.bmus_index)):
+        color_index = color_mapping[int(net.bmus_index[i])]
+        color = ccc[color_index]
+        plt.axvspan(i, i + 1, facecolor=color, alpha=1)  # Draw a colored rectangle for each frame
+
+    plt.xticks([])  # Hide x-axis ticks
+    plt.yticks([])  # Hide y-axis ticks
+    plt.show()
+
+def show_original_clusters_segmentation(ds, color_mapping) -> None:
+    # Generate a color palette with as many colors as there are classes
+    ccc = generate_colors(ds.num_classes)
+
+    # Plot colored rectangles for each original cluster index
+    plt.figure(figsize=(10, 2))
+    plt.title('Original Cluster Indices Across Frames')
+    plt.xlabel('Number of frames')
+    plt.ylim(0, 1)  # Set y-axis limits to create a single line effect
+    for i in range(len(ds.labels)):
+        color_index = color_mapping[int(ds.labels[i])]
+        color = ccc[color_index]
+        plt.axvspan(i, i + 1, facecolor=color, alpha=1)  # Draw a colored rectangle for each frame
+
+    plt.xticks([])  # Hide x-axis ticks
+    plt.yticks([])  # Hide y-axis ticks
+    plt.show()
+
 class Dataset:
     """ Create an instance dataset
     """

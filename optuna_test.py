@@ -22,8 +22,8 @@ def objective(trial, ds_iris,export_network_directory):
     """
     # float로 하니까 값이 새버려서 step size만큼 이동이 안돼..
     #'''
-    epochs = trial.suggest_int('epochs', 1, 100)
-    a_threshold = trial.suggest_float('a_threshold', 0.4, 0.5)
+    epochs = trial.suggest_int('epochs', 1, 1)
+    a_threshold = trial.suggest_float('a_threshold', 0.5, 0.5)
     beta = trial.suggest_float('beta', 0.01, 0.95)
     epsilon_b = trial.suggest_float('epsilon_b', 0.1, 0.3)
     epsilon_n = trial.suggest_float('epsilon_n', 0.0005, 0.0015)
@@ -88,7 +88,6 @@ def main(data_file, output_directory, export_network_directory, n_trials):
     plot_parallel_coordinate = vis.plot_parallel_coordinate(study)
     plot_slice = vis.plot_slice(study)
 
-    gtls.import_network()
     # Save plots as PNG to the specified directory
     pio.write_image(plot_optimization_history, output_directory + 'optimization_history.png')
     pio.write_image(plot_parallel_coordinate, output_directory + 'parallel_coordinate.png')

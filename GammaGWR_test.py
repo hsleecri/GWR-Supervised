@@ -6,24 +6,32 @@ if __name__ == "__main__":
     # Import dataset from file
     data_flag = True
     # Import pickled network
-    import_flag = False
+    import_flag = True
     # Train GWR with imported dataset    
-    train_flag = True
+    train_flag = False
     # Compute classification accuracy    
     test_flag = True
     # Export pickled network     
     export_flag = False
-    # Export result data
-    result_flag = True    
+    # Show result data
+    result_flag = False
+    # Compare the result with orignial data
+    compare_flag = False
+    # Show result data like Temporal Action Segmentation
+    result_segmentation_flag = True
+    # Compare the result with orignial data like Temporal Action Segmentation
+    compare_segmentation_flag = True    
     # Plot network (2D projection)
-    plot_flag = True
+    plot_flag = False
+
     
     if data_flag:
-        ds_iris = gtls.Dataset(file='C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_레이블_첫행제거_레이블값1뺐음.csv', normalize=True)
+        ds_iris = gtls.Dataset(file='C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_표준편차정렬_레이블_27개feature_첫행제거_레이블값1뺐음.csv', normalize=True)
         print("%s from %s loaded." % (ds_iris.name, ds_iris.file))
 
     if import_flag:
-        fname = 'my_net.ggwr'
+        num=0
+        fname = ('C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\Pickle\\trial_{}.pkl'.format(num))
         my_net = gtls.import_network(fname, GammaGWR)
     
     if train_flag:
@@ -47,12 +55,21 @@ if __name__ == "__main__":
         print("Accuracy on test-set: %s" % my_net.test_accuracy)
  
     if result_flag:
-        fname= 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_레이블_첫행제거_레이블값1뺐음_결과.csv'
-        gtls.export_result(fname, my_net, ds_iris)
+        fname= 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_표준편차정렬_레이블_27개feature_첫행제거_레이블값1뺐음_결과.csv'
+        gtls.show_result(fname, my_net, ds_iris)
 
     if export_flag:
         fname = 'my_net.ggwr'
         gtls.export_network(fname, my_net)
 
+    if compare_flag:
+        gtls.show_original_clusters(ds_iris)
+
+    if result_segmentation_flag:
+        gtls.show_result_segmentation(my_net,ds_iris)
+
+    if compare_segmentation_flag:
+        gtls.show_original_clusters_segmentation(ds_iris)
+
     if plot_flag:
-        gtls.plot_network_hs(my_net, edges=True, labels=True)
+        gtls.plot_network_with_pca(my_net, edges=True, labels=True) #숫자 보기 싫으면 코드에서 한줄 삭제하장
