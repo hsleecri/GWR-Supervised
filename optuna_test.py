@@ -1,5 +1,5 @@
 import gtls
-from GammaGWR_corrected import GammaGWR
+from GammaGWR import GammaGWR
 import optuna
 import optuna.visualization as vis
 import plotly.io as pio
