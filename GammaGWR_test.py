@@ -14,15 +14,15 @@ if __name__ == "__main__":
     # Export pickled network     
     export_flag = False
     # Show result data
-    result_flag = False
+    result_flag = True
     # Compare the result with orignial data
-    compare_flag = False
+    compare_flag = True
     # Show result data like Temporal Action Segmentation
     result_segmentation_flag = True
     # Compare the result with orignial data like Temporal Action Segmentation
     compare_segmentation_flag = True    
     # Plot network (2D projection)
-    plot_flag = False
+    plot_flag = True
 
     
     if data_flag:
@@ -30,7 +30,7 @@ if __name__ == "__main__":
         print("%s from %s loaded." % (ds_iris.name, ds_iris.file))
 
     if import_flag:
-        num=0
+        num=116
         fname = ('C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\Pickle\\trial_{}.pkl'.format(num))
         my_net = gtls.import_network(fname, GammaGWR)
     

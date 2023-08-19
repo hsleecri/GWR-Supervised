@@ -22,8 +22,8 @@ def objective(trial, ds_iris,export_network_directory):
     """
     # float로 하니까 값이 새버려서 step size만큼 이동이 안돼..
     #'''
-    epochs = trial.suggest_int('epochs', 1, 1)
-    a_threshold = trial.suggest_float('a_threshold', 0.4, 0.6)
+    epochs = trial.suggest_int('epochs', 1, 100)
+    a_threshold = trial.suggest_float('a_threshold', 0.4, 0.5) # 노드 수에 따라 구간을 먼저 잘 조절
     beta = trial.suggest_float('beta', 0.01, 0.95)
     epsilon_b = trial.suggest_float('epsilon_b', 0.1, 0.3)
     epsilon_n = trial.suggest_float('epsilon_n', 0.0005, 0.0015)
@@ -97,4 +97,4 @@ if __name__ == "__main__":
     data_file = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\CSV\\4공정_FRONT_CYCLE.mp4pose_world_interpolated_visibility제거_하반신제거_표준편차정렬_레이블_27개feature_첫행제거_레이블값1뺐음.csv'
     output_directory = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\PNG\\'
     export_network_directory = 'C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\Pickle\\' 
-    main(data_file, output_directory, export_network_directory, n_trials=1) #set the number of trials in study
+    main(data_file, output_directory, export_network_directory, n_trials=150) #set the number of trials in study

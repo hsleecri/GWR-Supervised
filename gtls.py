@@ -136,7 +136,7 @@ def generate_colors(n):
     Returns:
         A list of RGB tuples representing distinct colors.
     """
-    return plt.cm.jet(np.linspace(0, 1, n))
+    return sns.color_palette("husl", n)
 
 
 def plot_network_with_pca(net, edges, labels) -> None:
@@ -172,11 +172,16 @@ def plot_network_with_pca(net, edges, labels) -> None:
     # Adding labels for the axes
     plt.xlabel('Principal Component 1')
     plt.ylabel('Principal Component 2')
+    plt.title('PCA Network')  # Add title
     plt.show()
 
 def show_result(file_name, net, ds) -> None:
     """Saves the network weights to a CSV file and plots the BMUs.
     """
+    # Generate a color palette with as many colors as there are nodes
+    number_of_nodes = len(net.weights)
+    ccc = generate_colors(number_of_nodes)
+
     # Initialize BMUs index and activation
     net.bmus_index = -np.ones(net.samples)
     net.bmus_activation = np.zeros(net.samples)
@@ -187,6 +192,7 @@ def show_result(file_name, net, ds) -> None:
         b_index, b_distance = net.find_bmus(input_vector)
         net.bmus_index[i] = b_index
         net.bmus_activation[i] = math.exp(-b_distance)
+
     '''
     # Save weights to CSV
     gwr_node_weights = [x[0] for x in net.weights]
@@ -198,9 +204,6 @@ def show_result(file_name, net, ds) -> None:
     df_bmus = pd.DataFrame(net.bmus_index)
     df_bmus.to_csv(path_or_buf=file_name, index=False, header=False)
     '''
-    # Generate a color palette with as many colors as there are nodes
-    number_of_nodes = len(net.weights)
-    ccc = generate_colors(number_of_nodes)
 
     # Create a mapping from cluster index to color
     cluster_colors = [ccc[int(index)] for index in net.bmus_index]
@@ -255,7 +258,6 @@ def show_result_segmentation(net, ds) -> None:
     # Plot colored rectangles for each cluster index
     plt.figure(figsize=(10, 2))
     plt.title('Cluster Indices by Model Across Frames')
-
     plt.ylim(0, 1)  # Set y-axis limits to create a single line effect
     for i in range(len(net.bmus_index)):
         color = ccc[int(net.bmus_index[i])]
