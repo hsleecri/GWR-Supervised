@@ -30,7 +30,7 @@ if __name__ == "__main__":
         print("%s from %s loaded." % (ds_iris.name, ds_iris.file))
 
     if import_flag:
-        num=116
+        num=12
         fname = ('C:\\Users\\hslee\\Desktop\\dataset\\HYEONSU\\4공정\\Pickle\\trial_{}.pkl'.format(num))
         my_net = gtls.import_network(fname, GammaGWR)
     
